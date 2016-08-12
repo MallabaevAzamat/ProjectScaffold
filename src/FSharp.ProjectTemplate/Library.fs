@@ -15,4 +15,4 @@ module Library =
   ///
   /// ## Parameters
   ///  - `num` - whatever
-  let hello num = say_sum (say_sum 42 42) -42
+  let hello num = say_sum (say_sum (bigint 42) (bigint 42)) (bigint -42)
