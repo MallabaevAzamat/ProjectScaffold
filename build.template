@@ -9,6 +9,7 @@ open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
 open Fake.ProcessHelper
+open Fake.EnvironmentHelper
 open System
 open System.IO
 #if MONO
@@ -53,8 +54,8 @@ let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
 
 let verifyLine = "src/##ProjectName##/Sayer.fst"
 
-let codegenCopyFrom = ["out/Sayer.fs"]
-let codegenCopyTo = ["src/##ProjectName##/Sayer.fs"]
+let codegenCopyFrom = [environVar "FSTAR_HOME" </> "../ulib/fs/prims.fs"; "out/Sayer.fs"]
+let codegenCopyTo = ["src/##ProjectName##/prims.fs"; "src/##ProjectName##/Sayer.fs"]
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
@@ -136,14 +137,15 @@ Target "CleanDocs" (fun _ ->
 // Verify & codegen & build library & test project
 
 Target "Verify" (fun _ ->
-    StartProcess (fun info ->
-        info.FileName <- "%FSTAR_HOME%/fsc.exe"
-        info.Arguments <- "--codegen FSharp --odir out" verifyLine
-    )
+    match ExecProcessRedirected (fun info ->
+            info.FileName <- (environVar "FSTAR_HOME") </> "fstar"
+            info.Arguments <- "--codegen FSharp --odir out " + verifyLine
+        ) (TimeSpan.FromMinutes 10.0) with
+    | (_, rms) -> Seq.iter (fun m -> trace m.Message) rms
 )
 
 Target "CopyCodegen" (fun _ ->
-    Copy codegenCopyFrom codegenCopyTo
+    forall2 CopyFile codegenCopyTo codegenCopyFrom
 )
 
 Target "Build" (fun _ ->

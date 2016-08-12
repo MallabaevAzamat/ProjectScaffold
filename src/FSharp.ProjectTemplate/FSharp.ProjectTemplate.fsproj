@@ -60,6 +60,7 @@
   -->
   <Import Project="..\..\.paket\paket.targets" />
   <ItemGroup>
+    <Compile Include="prims.fs" />
     <Compile Include="Sayer.fs" />
     <Compile Include="Library.fs" />
     <None Include="Script.fsx" />
