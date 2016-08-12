@@ -84,6 +84,13 @@ let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
     | f when f.EndsWith("shproj") -> Shproj
     | _                           -> failwith (sprintf "Project file %s not supported. Unknown project type." projFileName)
 
+let rec forall2 f l1 l2 =
+    match l1 with
+    | [] -> ()
+    | x1::s1 ->
+        match l2 with
+        | x2::s2 -> f x1 x2; forall2 f s1 s2
+
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
     let getAssemblyInfoAttributes projectName =
