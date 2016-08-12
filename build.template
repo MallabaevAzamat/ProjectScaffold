@@ -8,6 +8,7 @@ open Fake.Git
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
+open Fake.ProcessHelper
 open System
 open System.IO
 #if MONO
@@ -49,6 +50,11 @@ let solutionFile  = "##ProjectName##.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
 let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
+
+let verifyLine = "src/##ProjectName##/Sayer.fst"
+
+let codegenCopyFrom = ["out/Sayer.fs"]
+let codegenCopyTo = ["src/##ProjectName##/Sayer.fs"]
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
@@ -127,7 +133,18 @@ Target "CleanDocs" (fun _ ->
 )
 
 // --------------------------------------------------------------------------------------
-// Build library & test project
+// Verify & codegen & build library & test project
+
+Target "Verify" (fun _ ->
+    StartProcess (fun info ->
+        info.FileName <- "%FSTAR_HOME%/fsc.exe"
+        info.Arguments <- "--codegen FSharp --odir out" verifyLine
+    )
+)
+
+Target "CopyCodegen" (fun _ ->
+    Copy codegenCopyFrom codegenCopyTo
+)
 
 Target "Build" (fun _ ->
     !! solutionFile
@@ -374,6 +391,8 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
+  ==> "Verify"
+  ==> "CopyCodegen"
   ==> "Build"
   ==> "CopyBinaries"
   ==> "RunTests"

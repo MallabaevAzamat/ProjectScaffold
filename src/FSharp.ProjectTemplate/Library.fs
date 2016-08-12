@@ -1,5 +1,7 @@
 ﻿namespace FSharp.ProjectTemplate
 
+open Sayer
+
 /// Documentation for my library
 ///
 /// ## Example
@@ -13,4 +15,4 @@ module Library =
   ///
   /// ## Parameters
   ///  - `num` - whatever
-  let hello num = 42
+  let hello num = say_sum (say_sum 42 42) -42
